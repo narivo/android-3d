@@ -1,0 +1,20 @@
+{
+  "name": "webview_ar",
+  "version": "0.0.1",
+  "description": "AR on android webview",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ar",
+    "js",
+    "android"
+  ],
+  "author": "David Andrianarivo",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^5.51.1",
+    "webpack-cli": "^4.8.0"
+  }
+}

@@ -1,16 +1,16 @@
 package com.example.webviewar
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.webkit.ConsoleMessage
-import android.webkit.PermissionRequest
-import android.webkit.WebChromeClient
-import android.webkit.WebView
+import android.webkit.*
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.webkit.WebViewAssetLoader
 
 
 class MainActivity : AppCompatActivity() {
@@ -25,7 +25,26 @@ class MainActivity : AppCompatActivity() {
         webvw.settings.javaScriptEnabled = true
         webvw.settings.domStorageEnabled = true
         webvw.webChromeClient = ChromeClient()
-        webvw.loadUrl("file:///android_asset/index.html")
+        webvw.addJavascriptInterface(JSInterface(this), "AndroidFunctions")
+
+        // domain = appassets.androidplatform.net
+        // url = domain + /assets/
+        val assetLoader: WebViewAssetLoader = WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+            .build()
+
+        webvw.webViewClient = object : WebViewClient() {
+            @RequiresApi(21)
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? {
+                return assetLoader.shouldInterceptRequest(request.url)
+            }
+        }
+
+        webvw.loadUrl("https://appassets.androidplatform.net/assets/custom-patterns.html")
+//        webvw.loadUrl("https://fcor.github.io/arjs-gestures/index.html")
     }
 
     override fun onResume() {
@@ -62,6 +81,14 @@ class MainActivity : AppCompatActivity() {
                 // nothing for now
             }
         }
+    }
+}
+
+class JSInterface(var context: Context){
+
+    @JavascriptInterface
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 }
 
