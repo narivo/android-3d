@@ -15,8 +15,15 @@ import androidx.webkit.WebViewAssetLoader
 
 class MainActivity : AppCompatActivity() {
 
+    companion object{
+        init {
+            System.loadLibrary("native-lib")
+        }
+    }
+
     lateinit var webvw: WebView
 
+    @SuppressLint("AddJavascriptInterface", "SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -42,9 +49,9 @@ class MainActivity : AppCompatActivity() {
                 return assetLoader.shouldInterceptRequest(request.url)
             }
         }
-
-        webvw.loadUrl("https://appassets.androidplatform.net/assets/custom-patterns.html")
-//        webvw.loadUrl("https://fcor.github.io/arjs-gestures/index.html")
+        //webvw.loadUrl("https://appassets.androidplatform.net/assets/index.html")
+        webvw.loadUrl("https://appassets.androidplatform.net/assets/hello-cube.html")
+        //webvw.loadUrl("https://appassets.androidplatform.net/assets/custom-patterns.html")/
     }
 
     override fun onResume() {
