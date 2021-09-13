@@ -2,11 +2,6 @@
 // Created by MadiApps on 07/09/2021.
 //
 #include "jni.h"
-#include <string>
-#include <android/asset_manager_jni.h>
-#include <android/log.h>
-#include <stb_image.h>
-#include <unistd.h>
 
 #if DYNAMIC_ES3
 #include "gl3stub.h"
@@ -19,10 +14,16 @@
 #else
 #include <GLES3/gl3.h>
 #endif
-
 #endif
-
 #include <EGL/egl.h>
+
+#include <android/asset_manager_jni.h>
+#include <android/log.h>
+
+#include <stb_image.h>
+
+#include <string>
+#include <unistd.h>
 
 #define  LOG_TAG    "NATIVE_LIB"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
@@ -176,9 +177,10 @@ Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject th
     glGenBuffers(1, &EBO);
     glGenVertexArrays(1, &VAO);
     // binding
+    glBindVertexArray(VAO);
+    // bind VBO, EBO after binding VAO
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBindVertexArray(VAO);
     // mapping
     // the current buffer data is set to the latest bound VBO
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
