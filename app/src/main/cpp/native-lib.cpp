@@ -128,6 +128,12 @@ Java_com_example_webviewar_NativeLibActivity_load(JNIEnv *env, jobject thiz, job
         AAsset_close(asset);
     }
     AAssetDir_close(assetDir);
+
+    std::string picture=  "awesomeface.png";
+    std::string cache_dir =  app_dir + picture;
+    //strcpy(cache_dir, app_dir);
+
+    LOGI("fully qualified file= %s", cache_dir.c_str());
 }
 
 extern "C"
