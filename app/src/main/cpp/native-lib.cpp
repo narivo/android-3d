@@ -41,6 +41,8 @@ unsigned int indices[] = {
         1, 2, 3
 };
 
+unsigned int VAO;
+
 static const char vertexShaderSource[] =
         "#version 300 es\n"
         "layout (location = 0) in vec3 aPos;\n"
@@ -137,6 +139,9 @@ Java_com_example_webviewar_Renderer_nativeSurfaceChanged(JNIEnv *env, jobject th
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject thiz) {
+
+    gl3stubInit();
+
     unsigned int vertexShader = create_compile_shader(GL_VERTEX_SHADER, vertexShaderSource);
     unsigned int fragmentShader = create_compile_shader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
@@ -166,20 +171,19 @@ Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject th
 
     // our VBO, VAO
     unsigned int VBO, EBO;
-    unsigned int VAO;
     // generation
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
+    glGenVertexArrays(1, &VAO);
     // binding
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindVertexArray(VAO);
     // mapping
     // the current buffer data is set to the latest bound VBO
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
 
     // 0 refers to the `layout (location = 0)` attribute in both
     // glVertexAttribPointer and glEnableVertexAttribArray
@@ -200,5 +204,6 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    //glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 

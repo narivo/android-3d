@@ -136,17 +136,17 @@ Renderer::~Renderer() {
 }
 
 void Renderer::resize(int w, int h) {
-    auto offsets = mapOffsetBuf();
-    calcSceneParams(w, h, offsets);
-    unmapOffsetBuf();
+    //auto offsets = mapOffsetBuf();
+    //calcSceneParams(w, h, offsets);
+    //unmapOffsetBuf();
 
     // Auto gives a signed int :-(
-    for (auto i = (unsigned)0; i < mNumInstances; i++) {
-        mAngles[i] = drand48() * TWO_PI;
-        mAngularVelocity[i] = MAX_ROT_SPEED * (2.0*drand48() - 1.0);
-    }
+    //for (auto i = (unsigned)0; i < mNumInstances; i++) {
+        //mAngles[i] = drand48() * TWO_PI;
+        //mAngularVelocity[i] = MAX_ROT_SPEED * (2.0*drand48() - 1.0);
+    //}
 
-    mLastFrameNs = 0;
+    //mLastFrameNs = 0;
 
     glViewport(0, 0, w, h);
 }
@@ -251,24 +251,24 @@ static GLboolean gl3stubInit() {
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_webviewar_GLES3JNILib_init(JNIEnv* env, jclass obj) {
-if (g_renderer) {
-delete g_renderer;
-g_renderer = NULL;
-}
+    if (g_renderer) {
+        delete g_renderer;
+        g_renderer = NULL;
+    }
 
-printGlString("Version", GL_VERSION);
-printGlString("Vendor", GL_VENDOR);
-printGlString("Renderer", GL_RENDERER);
-printGlString("Extensions", GL_EXTENSIONS);
+    printGlString("Version", GL_VERSION);
+    printGlString("Vendor", GL_VENDOR);
+    printGlString("Renderer", GL_RENDERER);
+    printGlString("Extensions", GL_EXTENSIONS);
 
-const char* versionStr = (const char*)glGetString(GL_VERSION);
-if (strstr(versionStr, "OpenGL ES 3.") && gl3stubInit()) {
-g_renderer = createES3Renderer();
-} else if (strstr(versionStr, "OpenGL ES 2.")) {
-g_renderer = createES2Renderer();
-} else {
-ALOGE("Unsupported OpenGL ES version");
-}
+    const char* versionStr = (const char*)glGetString(GL_VERSION);
+    if (strstr(versionStr, "OpenGL ES 3.") && gl3stubInit()) {
+        g_renderer = createES3Renderer();
+    } else if (strstr(versionStr, "OpenGL ES 2.")) {
+        g_renderer = createES2Renderer();
+    } else {
+        ALOGE("Unsupported OpenGL ES version");
+    }
 }
 
 extern "C" JNIEXPORT void JNICALL
