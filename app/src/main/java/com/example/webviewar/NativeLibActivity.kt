@@ -4,7 +4,11 @@ import android.Manifest
 import android.app.ActivityManager
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.opengl.GLES30.*
 import android.opengl.GLSurfaceView
+import android.opengl.GLUtils
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -12,6 +16,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_native_lib.*
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.lang.IllegalArgumentException
+import java.nio.IntBuffer
+import java.nio.charset.StandardCharsets
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -27,7 +37,6 @@ class NativeLibActivity: AppCompatActivity() {
     }
 
     external fun load(mgr: AssetManager)
-
     external fun getHello(): String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +44,8 @@ class NativeLibActivity: AppCompatActivity() {
 
         setContentView(R.layout.activity_native_lib)
         // Check if the system supports OpenGL ES 2.0.
+
+        globalAssets = assets
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
         val supportsEs3 = activityManager.deviceConfigurationInfo.reqGlEsVersion >= 0x30000
 
@@ -65,7 +76,7 @@ class NativeLibActivity: AppCompatActivity() {
         super.onResume()
         surfacevw.onResume()
         if(permissionGranted) {
-            load(resources.assets)
+            load(assets)
         }
     }
 
@@ -93,12 +104,52 @@ class NativeLibActivity: AppCompatActivity() {
     }
 }
 
+var globalAssets: AssetManager? = null
+
 class Renderer: GLSurfaceView.Renderer {
 
     companion object {
+        private val TAG = Renderer::class.java.simpleName
         init {
             System.loadLibrary("gles3jni")
         }
+    }
+
+    var sharedShader = Shader
+
+    fun loadTexture(assets: AssetManager, path: String, activeTex: Int): Int {
+
+        var inStm: InputStream? = try {
+            assets.open(path)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return -1
+        }
+        val op = BitmapFactory.Options()
+        op.inPreferredConfig = Bitmap.Config.ARGB_8888
+        val bmp = BitmapFactory.decodeStream(inStm, null, op)
+
+        // generate textureID
+        val textures = IntBuffer.allocate(1)
+        glGenTextures(1, textures)
+        glActiveTexture(GL_TEXTURE0 + activeTex)
+        val textureID = textures[0]
+
+        // create texture
+        glBindTexture(GL_TEXTURE_2D, textureID)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        GLUtils.texImage2D(GL_TEXTURE_2D, 0, bmp, 0)
+
+        // clean up
+        try {
+            inStm?.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            bmp!!.recycle()
+        }
+        return textureID
     }
 
     external fun nativeSurfaceChanged(width: Int, height: Int)
