@@ -1,6 +1,10 @@
 package com.example.webviewar
 
+import android.content.res.AssetManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.opengl.GLES30.*
+import android.opengl.GLUtils
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -98,6 +102,41 @@ object Shader {
                 val infoLog = glGetShaderInfoLog(shader)
                 throw Exception("ERROR::SHADER::COMPILATION_FAILED::${type.uppercase()}\n Reason: \n $infoLog")
             }
+        }
+    }
+}
+
+object Texture {
+
+    var assets: AssetManager? = null
+
+    fun loadTexture(path: String, activeTex: Int): Int {
+        var textureID = -1
+        var inStm: InputStream? = null
+        var bmp: Bitmap? = null
+        try {
+            inStm = assets?.open(path)
+            val op = BitmapFactory.Options()
+            op.inPreferredConfig = Bitmap.Config.ARGB_8888
+            bmp = BitmapFactory.decodeStream(inStm, null, op)
+
+            // generate textureID
+            val textures = IntBuffer.allocate(1)
+            glGenTextures(1, textures)
+            glActiveTexture(GL_TEXTURE0 + activeTex)
+            textureID = textures[0]
+
+            // create texture
+            glBindTexture(GL_TEXTURE_2D, textureID)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            GLUtils.texImage2D(GL_TEXTURE_2D, 0, bmp, 0)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            inStm?.close()
+            bmp?.recycle()
+            return textureID
         }
     }
 }

@@ -2,26 +2,19 @@ package com.example.webviewar
 
 import android.Manifest
 import android.app.ActivityManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.opengl.GLES30.*
 import android.opengl.GLSurfaceView
-import android.opengl.GLUtils
 import android.os.Bundle
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_native_lib.*
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.lang.IllegalArgumentException
-import java.nio.IntBuffer
-import java.nio.charset.StandardCharsets
+import androidx.core.view.GestureDetectorCompat
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -39,11 +32,14 @@ class NativeLibActivity: AppCompatActivity() {
     external fun load(mgr: AssetManager)
     external fun getHello(): String
 
+    lateinit var surfacevw: GLView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_native_lib)
-        // Check if the system supports OpenGL ES 2.0.
+        surfacevw = GLView(this)
+        setContentView(surfacevw)
+        // Check if the system supports OpenGL ES 3.0.
 
         globalAssets = assets
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
@@ -116,41 +112,7 @@ class Renderer: GLSurfaceView.Renderer {
     }
 
     var sharedShader = Shader
-
-    fun loadTexture(assets: AssetManager, path: String, activeTex: Int): Int {
-
-        var inStm: InputStream? = try {
-            assets.open(path)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            return -1
-        }
-        val op = BitmapFactory.Options()
-        op.inPreferredConfig = Bitmap.Config.ARGB_8888
-        val bmp = BitmapFactory.decodeStream(inStm, null, op)
-
-        // generate textureID
-        val textures = IntBuffer.allocate(1)
-        glGenTextures(1, textures)
-        glActiveTexture(GL_TEXTURE0 + activeTex)
-        val textureID = textures[0]
-
-        // create texture
-        glBindTexture(GL_TEXTURE_2D, textureID)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        GLUtils.texImage2D(GL_TEXTURE_2D, 0, bmp, 0)
-
-        // clean up
-        try {
-            inStm?.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } finally {
-            bmp!!.recycle()
-        }
-        return textureID
-    }
+    var sharedTexture = Texture
 
     external fun nativeSurfaceChanged(width: Int, height: Int)
 
@@ -159,6 +121,7 @@ class Renderer: GLSurfaceView.Renderer {
     external fun nativeDrawFrame()
 
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
+        sharedTexture.assets = globalAssets
         nativeSurfaceCreated()
     }
 
@@ -168,6 +131,60 @@ class Renderer: GLSurfaceView.Renderer {
 
     override fun onDrawFrame(p0: GL10?) {
         nativeDrawFrame()
+    }
+
+}
+
+class GLView(ctx: Context) : GLSurfaceView(ctx), GestureDetector.OnGestureListener {
+
+    companion object {
+        private val TAG = GLView::class.java.simpleName
+        init {
+            System.loadLibrary("gles3jni")
+        }
+    }
+
+    external fun nativeCameraRotation(xoffest: Float, yoffset: Float);
+
+    var gestureDetector: GestureDetectorCompat = GestureDetectorCompat(ctx, this)
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        return gestureDetector.onTouchEvent(event)
+    }
+
+    override fun onDown(event: MotionEvent): Boolean {
+        Log.d(TAG, "onDown: $event")
+        return true
+    }
+
+    override fun onShowPress(event: MotionEvent?) {
+        Log.d(TAG, "onShowPress: $event")
+    }
+
+    override fun onSingleTapUp(event: MotionEvent?): Boolean {
+        Log.d(TAG, "onSingleTapUp: $event")
+        return false
+    }
+
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+        Log.d(TAG, "onScroll: $e1 $e2")
+        // all width = 89 deg
+        // all height = 179 deg
+        var yaw = (distanceX*179)/width
+        var pitch = (distanceY*89)/height
+        // left->right = neg | right->left = pos
+        // top-> bottom = neg| bottom->top = pos
+        nativeCameraRotation(distanceX, distanceY)
+        return true
+    }
+
+    override fun onLongPress(event: MotionEvent?) {
+        Log.d(TAG, "onLongPress: $event")
+    }
+
+    override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+        Log.d(TAG, "onFling: $e1 $e2")
+        return true
     }
 
 }
