@@ -16,24 +16,15 @@ object Shader {
 
     fun createProgram(vertexPath: String, fragmentPath: String): Int {
         var ID = -1
-        var vertShInStm: InputStream? = null
-        var fragShInStm: InputStream? = null
         try {
             val values = tryCreateProgram(vertexPath, fragmentPath)
             ID = values.first
-            fragShInStm = values.second
-            vertShInStm = values.third
+            values.second?.close()
+            values.third?.close()
         } catch (e: IOException) {
             e.printStackTrace()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-        } finally {
-            vertShInStm?.close()
-            fragShInStm?.close()
-            return ID
         }
+        return ID
     }
 
     private fun tryCreateProgram(vertexPath: String, fragmentPath: String): Triple<Int, InputStream?, InputStream?> {
