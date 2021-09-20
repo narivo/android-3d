@@ -2,6 +2,7 @@
 #include "shader.h"
 #include <optional>
 #include "camera.h"
+#include <model.h>
 
 float vertices[] = {
     // positions          // normals           // texture coords
@@ -81,6 +82,7 @@ glm::mat4 projection;
 AAssetManager* aAssetManager;
 std::optional<Shader> ourShader;
 std::optional<Shader> lightShader;
+std::optional<Model> ourModel;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -118,21 +120,24 @@ Java_com_example_webviewar_NativeLibActivity_getHello(JNIEnv *env, jobject thiz)
 unsigned int loadTexture(JNIEnv *env, jobject thiz, const char *path, unsigned int activeTex) {
     // loading textures in the JVM env
 
-    jclass rendererKlass = env->GetObjectClass(thiz);
+    jclass glUtilsKlass = env->FindClass("com/example/webviewar/GLUtils");
+    jmethodID loadTexture = env->GetStaticMethodID(glUtilsKlass, "loadTexture", "(Ljava/lang/String;I)I");
+
+    /*jclass rendererKlass = env->GetObjectClass(thiz);
     jfieldID sharedTextureID = env->GetFieldID(rendererKlass, "sharedTexture",
                                               "com/example/webviewar/Texture");
     jobject sharedTextureObj = env->GetObjectField(thiz, sharedTextureID);
     jclass textureKlass = env->GetObjectClass(sharedTextureObj);
     jmethodID loadTexture = env->GetMethodID(textureKlass, "loadTexture",
-                                               "(Ljava/lang/String;I)I");
+                                               "(Ljava/lang/String;I)I");*/
     if (loadTexture == NULL) {
         LOGE("Couldn't find loadTexture method");
     }
 
     jstring pathStr = env->NewStringUTF(path);
 
-    unsigned int textureID = env->CallIntMethod(sharedTextureObj, loadTexture,
-                                                pathStr, activeTex);
+    unsigned int textureID = env->CallStaticIntMethod(glUtilsKlass, loadTexture,
+                                                pathStr, (int) activeTex);
 
     env->DeleteLocalRef(pathStr);
 
@@ -181,9 +186,10 @@ Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject th
     lightShader = Shader(env, thiz,
                        "vertex.glsl", "lightFragment.glsl");
 
+    ourModel = Model("backpack/backpack.obj");
     // our VBO, VAO
     // generation
-    glGenVertexArrays(1, &VAO);
+    /*glGenVertexArrays(1, &VAO);
     glGenVertexArrays(1, &lightVAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -223,7 +229,7 @@ Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject th
     //glBindVertexArray(0); // not necessary, in general, don't do this
 
     ourShader->use();
-    ourShader->setFloat("ratio", 0.5);
+    ourShader->setFloat("ratio", 0.5);*/
 
     setupNDC();
     glEnable(GL_DEPTH_TEST);
@@ -240,7 +246,7 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
     // why after use ?
     // because we may use several Shader program
     // in one app !!
-    ourShader->setInt("material.diffuse", 0);
+    /*ourShader->setInt("material.diffuse", 0);
     ourShader->setInt("material.specular", 1);
     ourShader->setInt("material.emission", 2);
 
@@ -253,7 +259,7 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
        by using 'Uniform buffer objects', but that is something we'll discuss in the 'Advanced GLSL' tutorial.
     */
     // Directional light
-    glUniform3f(glGetUniformLocation(ourShader->ID, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
+    /*glUniform3f(glGetUniformLocation(ourShader->ID, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
     glUniform3f(glGetUniformLocation(ourShader->ID, "dirLight.ambient"), 0.3f, 0.24f, 0.14f);
     glUniform3f(glGetUniformLocation(ourShader->ID, "dirLight.diffuse"), 0.7f, 0.42f, 0.26f);
     glUniform3f(glGetUniformLocation(ourShader->ID, "dirLight.specular"), 0.5f, 0.5f, 0.5f);
@@ -302,7 +308,7 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
     glUniform1f(glGetUniformLocation(ourShader->ID, "spotLight.outerCutOff"), glm::cos(glm::radians(13.0f)));
 
     ourShader->setVec3("viewPos", camera.Position);
-    ourShader->setFloat("material.shininess", 32.0f);
+    ourShader->setFloat("material.shininess", 32.0f);*/
 
     model = glm::mat4(1.0f);
     model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -316,11 +322,12 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     ourShader->setMat4("projection", projection);
 
+    ourModel->Draw(ourShader);
     // the process of drawing
     // does not matter if you loop the binding.
     // if it's bound, then it is effectively bound !!!
 
-    glBindVertexArray(VAO);
+    /*glBindVertexArray(VAO);
     for(unsigned  int  i  =  0;  i  <  10;  i++) {
         glm::mat4  model  =  glm::mat4(1.0f);
         model  =  glm::translate(model,  cubePositions[i]);
@@ -346,7 +353,7 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
         lightShader->setMat4("model", model);
         lightShader->setVec3("lightColor", pointLightColors[i]);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
+    }*/
 }
 
 extern "C"

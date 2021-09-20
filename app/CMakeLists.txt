@@ -17,6 +17,16 @@ include_directories(src/main/cpp/include)
 
 file(GLOB SOURCES "src/main/cpp/*.cpp")
 
+add_library(
+        assimp
+        SHARED
+        IMPORTED)
+
+set_target_properties(
+        assimp
+        PROPERTIES IMPORTED_LOCATION
+        /Users/madiapps/android-native-libs/assimp/${ANDROID_ABI}/libassimp.so)
+
 add_library( # Specifies the name of the library.
         gles3jni
 
@@ -29,6 +39,7 @@ add_library( # Specifies the name of the library.
 # Links your native library against one or more other native libraries.
 target_link_libraries( # Specifies the target library.
         gles3jni
+        assimp
         GLESv3
         android
         EGL

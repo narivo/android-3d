@@ -4,7 +4,11 @@ Shader::Shader(JNIEnv* env, jobject thiz,
         std::string vertexPath, const char* fragmentPath) {
     // creating program in the JVM env
 
-    jclass rendererKlass = env->GetObjectClass(thiz);
+    jclass glUtilsKlass = env->FindClass("com/example/webviewar/GLUtils");
+    jmethodID createProgram = env->GetStaticMethodID(glUtilsKlass, "createProgram",
+                                                     "(Ljava/lang/String;Ljava/lang/String;)I");
+
+    /*jclass rendererKlass = env->GetObjectClass(thiz);
     jfieldID sharedShaderID = env->GetFieldID(rendererKlass, "sharedShader",
                                             "com/example/webviewar/Shader");
     jobject sharedShaderObj = env->GetObjectField(thiz, sharedShaderID);
@@ -13,12 +17,12 @@ Shader::Shader(JNIEnv* env, jobject thiz,
                                                "(Ljava/lang/String;Ljava/lang/String;)I");
     if (createProgram == NULL) {
         LOGE("Couldn't find createProgram method");
-    }
+    }*/
 
     jstring vertexStr = env->NewStringUTF(vertexPath.c_str());
     jstring fragmentStr = env->NewStringUTF(fragmentPath);
 
-    ID = env->CallIntMethod(sharedShaderObj, createProgram,
+    ID = env->CallStaticIntMethod(glUtilsKlass, createProgram,
                             vertexStr, fragmentStr);
 
     env->DeleteLocalRef(vertexStr);

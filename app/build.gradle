@@ -4,9 +4,45 @@ plugins {
     id 'kotlin-android-extensions'
 }
 
+def defaultPathBase = System.getProperty("user.dir")
+def debug_keystore_path
+def release_keystore_path
+
+if (System.properties['os.name'].toLowerCase().contains('windows')) {
+    println "Compiling on Windows ..."
+    debug_keystore_path = defaultPathBase + '\\app\\keystores\\debug.keystore'
+    release_keystore_path = defaultPathBase + '\\app\\keystores\\release.keystore'
+
+} else {
+    println "Compiling on UNIX ..."
+    debug_keystore_path = defaultPathBase + '/app/keystores/debug.keystore'
+    release_keystore_path = defaultPathBase + '/app/keystores/release.keystore'
+}
+
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     compileSdkVersion 31
     buildToolsVersion "31.0.0"
+
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['releaseKeyAlias']
+            keyPassword keystoreProperties['releaseKeyPassword']
+            storePassword keystoreProperties['releaseStorePassword']
+            storeFile file(release_keystore_path)
+
+        }
+        debug {
+            keyAlias keystoreProperties['debugKeyAlias']
+            keyPassword keystoreProperties['debugKeyPassword']
+            storePassword keystoreProperties['debugStorePassword']
+            storeFile file(debug_keystore_path)
+        }
+    }
 
     defaultConfig {
         applicationId "com.example.webviewar"
@@ -22,6 +58,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
         }
     }
     compileOptions {

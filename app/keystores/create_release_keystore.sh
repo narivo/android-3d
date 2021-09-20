@@ -1,0 +1,1 @@
+keytool -genkey -v -keystore release.keystore -storepass webviewar2021 -alias ReleaseKeyWebViewAR -keypass webviewar2021 -keyalg RSA -keysize 2048 -validity 10000

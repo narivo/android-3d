@@ -1,6 +1,9 @@
 package com.example.webviewar;
 
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -14,8 +17,9 @@ import static android.opengl.GLES30.*;
 public class GLUtils  {
 
     private static final String TAG = GLUtils.class.getSimpleName();
+    public static AssetManager assets;
 
-    public static int createProgram(AssetManager assets, String vertexPath, String fragmentPath) {
+    public static int createProgram(String vertexPath, String fragmentPath) {
         try {
             InputStream vertShInStm = assets.open(vertexPath);
             InputStream fragShInStm = assets.open(fragmentPath);
@@ -61,7 +65,7 @@ public class GLUtils  {
     }
 
     private static int createCompileShader(int type, String shaderCode) {
-        if(type != GL_FRAGMENT_SHADER || type != GL_VERTEX_SHADER) {
+        if(type != GL_FRAGMENT_SHADER && type != GL_VERTEX_SHADER) {
             throw new IllegalArgumentException("Shader type must be one of: GL_FRAGMENT_SHADER or GL_VERTEX_SHADER constant");
         }
         int shader = glCreateShader(type);
@@ -89,5 +93,30 @@ public class GLUtils  {
                 Log.e(TAG, "ERROR::SHADER::COMPILATION_FAILED\n Reason: \n " + infoLog);
             }
         }
+    }
+
+    public static int loadTexture(String path, int activeTex) {
+        int textureID = -1;
+        try(InputStream inStm = assets.open(path)) {
+            BitmapFactory.Options op = new BitmapFactory.Options();
+            op.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            Bitmap bmp = BitmapFactory.decodeStream(inStm, null, op);
+
+            // generate textureID
+            IntBuffer textures = IntBuffer.allocate(1);
+            glGenTextures(1, textures);
+            glActiveTexture(GL_TEXTURE0+activeTex);
+            textureID = textures.get(0);
+
+            // create texture
+            glBindTexture(GL_TEXTURE_2D, textureID);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            android.opengl.GLUtils.texImage2D(GL_TEXTURE_2D, 0, bmp, 0);
+            if(bmp != null) bmp.recycle();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return textureID;
     }
 }

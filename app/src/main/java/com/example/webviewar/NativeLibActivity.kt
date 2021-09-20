@@ -50,7 +50,7 @@ class NativeLibActivity: AppCompatActivity() {
             surfacevw.setEGLContextClientVersion(3)
 
             // Set the native renderer to our demo renderer,defined below.
-            surfacevw.setRenderer(Renderer())
+            surfacevw.setRenderer(Renderer(assets))
         } else {
             // This is where you could create an OpenGL ES 1.x compatible
             // renderer if you wanted to support both ES 1 and ES 2.
@@ -102,7 +102,7 @@ class NativeLibActivity: AppCompatActivity() {
 
 var globalAssets: AssetManager? = null
 
-class Renderer: GLSurfaceView.Renderer {
+/*class Renderer: GLSurfaceView.Renderer {
 
     companion object {
         private val TAG = Renderer::class.java.simpleName
@@ -111,8 +111,8 @@ class Renderer: GLSurfaceView.Renderer {
         }
     }
 
-    var sharedShader = Shader
-    var sharedTexture = Texture
+    @JvmField val sharedShader = Shader
+    @JvmField val sharedTexture = Texture
 
     external fun nativeSurfaceChanged(width: Int, height: Int)
 
@@ -133,7 +133,7 @@ class Renderer: GLSurfaceView.Renderer {
         nativeDrawFrame()
     }
 
-}
+}*/
 
 class GLView(ctx: Context) : GLSurfaceView(ctx), GestureDetector.OnGestureListener {
 
