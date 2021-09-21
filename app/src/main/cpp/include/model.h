@@ -23,10 +23,10 @@ using namespace std;
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 
-class Model 
+class Model
 {
 public:
-    // model data 
+    // model data
     vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     vector<Mesh>    meshes;
     string directory;
@@ -39,12 +39,12 @@ public:
     }
 
     // draws the model, and thus all its meshes
-    void Draw(optional<Shader> shader)
+    void Draw(std::optional<Shader> &shader)
     {
         for(unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader);
     }
-    
+
 private:
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
     void loadModel(string const &path)
@@ -55,8 +55,7 @@ private:
         // check for errors
         if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
         {
-            string errorMessage = "ERROR::ASSIMP:: " + string(importer.GetErrorString());
-            LOGE("%s", errorMessage.c_str());
+            cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
             return;
         }
         // retrieve the directory path of the filepath
@@ -116,7 +115,7 @@ private:
                 glm::vec2 vec;
                 // a vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
                 // use models where a vertex can have multiple texture coordinates so we always take the first set (0).
-                vec.x = mesh->mTextureCoords[0][i].x; 
+                vec.x = mesh->mTextureCoords[0][i].x;
                 vec.y = mesh->mTextureCoords[0][i].y;
                 vertex.TexCoords = vec;
                 // tangent
@@ -141,10 +140,10 @@ private:
             aiFace face = mesh->mFaces[i];
             // retrieve all indices of the face and store them in the indices vector
             for(unsigned int j = 0; j < face.mNumIndices; j++)
-                indices.push_back(face.mIndices[j]);        
+                indices.push_back(face.mIndices[j]);
         }
         // process materials
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];    
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
         // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
         // Same applies to other texture as the following list summarizes:
@@ -164,7 +163,7 @@ private:
         // 4. height maps
         std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-        
+
         // return a mesh object created from the extracted mesh data
         return Mesh(vertices, indices, textures);
     }
@@ -210,7 +209,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
     filename = directory + '/' + filename;
 
     unsigned int textureID;
-    /*glGenTextures(1, &textureID);
+    glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
     unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
@@ -239,7 +238,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
     {
         std::cout << "Texture failed to load at path: " << path << std::endl;
         stbi_image_free(data);
-    }*/
+    }
 
     return textureID;
 }

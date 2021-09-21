@@ -15,8 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GestureDetectorCompat
-import javax.microedition.khronos.egl.EGLConfig
-import javax.microedition.khronos.opengles.GL10
 
 class NativeLibActivity: AppCompatActivity() {
 
@@ -29,7 +27,7 @@ class NativeLibActivity: AppCompatActivity() {
         }
     }
 
-    external fun load(mgr: AssetManager)
+    external fun loadAssets(mgr: AssetManager)
     external fun getHello(): String
 
     lateinit var surfacevw: GLView
@@ -45,6 +43,19 @@ class NativeLibActivity: AppCompatActivity() {
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
         val supportsEs3 = activityManager.deviceConfigurationInfo.reqGlEsVersion >= 0x30000
 
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_PERMISSION_CODE)
+        } else {
+            permissionGranted = true
+        }
+
+        if(permissionGranted) {
+            loadAssets(assets)
+        }
+
         if (supportsEs3) {
             // Request an OpenGL ES 3.0 compatible context.
             surfacevw.setEGLContextClientVersion(3)
@@ -57,23 +68,11 @@ class NativeLibActivity: AppCompatActivity() {
                 Log.e(TAG, "Do not support ES3")
             return
         }
-
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_PERMISSION_CODE)
-        } else {
-            permissionGranted = true
-        }
     }
 
     override fun onResume() {
         super.onResume()
         surfacevw.onResume()
-        if(permissionGranted) {
-            load(assets)
-        }
     }
 
     override fun onPause() {
