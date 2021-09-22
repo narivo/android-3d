@@ -3,6 +3,7 @@
 #include <optional>
 #include "camera.h"
 #include <model.h>
+#include <animator.h>
 
 int SCR_WIDTH = 1280, SCR_HEIGHT = 720;
 glm::mat4 model(1.0f);
@@ -11,6 +12,7 @@ glm::mat4 projection;
 AAssetManager* aAssetManager;
 std::optional<Shader> ourShader;
 std::optional<Model> ourModel;
+std::optional<Animator> animator;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -19,6 +21,10 @@ glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
 
 struct stat st = {0};
 
@@ -55,16 +61,27 @@ Java_com_example_webviewar_NativeLibActivity_loadAssets(JNIEnv *env, jobject thi
     extractDir(assetDir, "");
     AAssetDir_close(assetDir);
 
-    if(stat("backpack", &st) == -1) {
-        mkdir("backpack", 0700);
+    if(stat("vampire", &st) == -1) {
+        mkdir("vampire", 0700);
     }
 
-    string obj_dir = string(app_dir) + "/backpack";
+    string obj_dir = string(app_dir) + "/vampire";
     chdir(obj_dir.c_str());
 
-    AAssetDir* backpackDir = AAssetManager_openDir(aAssetManager, "backpack");
-    extractDir(backpackDir, "backpack");
+    AAssetDir* backpackDir = AAssetManager_openDir(aAssetManager, "vampire");
+    extractDir(backpackDir, "vampire");
     AAssetDir_close(backpackDir);
+
+    if(stat("textures", &st) == -1) {
+        mkdir("textures", 0700);
+    }
+
+    string vamp_dir = string(app_dir) + "/vampire/textures";
+    chdir(vamp_dir.c_str());
+
+    AAssetDir* vampireDir = AAssetManager_openDir(aAssetManager, "vampire/textures");
+    extractDir(vampireDir, "vampire/textures");
+    AAssetDir_close(vampireDir);
 
     chdir(app_dir);
     env->ReleaseStringUTFChars(jpath, app_dir);
@@ -102,26 +119,6 @@ Java_com_example_webviewar_NativeLibActivity_getHello(JNIEnv *env, jobject thiz)
     std::string hello = "Hello from C++";
     LOGI("I am working from the c++ world");
     return env->NewStringUTF(hello.c_str());
-}
-
-unsigned int loadTexture(JNIEnv *env, jobject thiz, const char *path, unsigned int activeTex) {
-    // loading textures in the JVM env
-
-    jclass glUtilsKlass = env->FindClass("com/example/webviewar/GLUtils");
-    jmethodID loadTexture = env->GetStaticMethodID(glUtilsKlass, "loadTexture", "(Ljava/lang/String;I)I");
-
-    if (loadTexture == NULL) {
-        LOGE("Couldn't find loadTexture method");
-    }
-
-    jstring pathStr = env->NewStringUTF(path);
-
-    unsigned int textureID = env->CallStaticIntMethod(glUtilsKlass, loadTexture,
-                                                pathStr, (int) activeTex);
-
-    env->DeleteLocalRef(pathStr);
-
-    return textureID;
 }
 
 void setupNDC() {
@@ -163,7 +160,10 @@ Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject th
 
     ourShader = Shader(env, thiz,
                        "vertex.glsl", "fragment.glsl");
-    ourModel = Model("backpack/backpack.obj");
+
+    ourModel = Model("vampire/dancing_vampire.dae");
+    Animation danceAnimation("vampire/dancing_vampire.dae", &ourModel);
+    animator = Animator(&danceAnimation);
 
     setupNDC();
     glEnable(GL_DEPTH_TEST);
@@ -172,6 +172,15 @@ Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject th
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
+
+    jclass systemKlass = env->FindClass("java/lang/System");
+    jmethodID currentTimeMillis = env->GetStaticMethodID(systemKlass, "currentTimeMillis", "()J");
+    jlong timeMillis = env->CallStaticLongMethod(systemKlass, currentTimeMillis);
+
+    float currentFrame = (float) timeMillis;
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+    animator->UpdateAnimation(deltaTime);
 
     glClearColor(0.75f, 0.52f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
