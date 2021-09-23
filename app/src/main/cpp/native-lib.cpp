@@ -4,6 +4,7 @@
 #include "camera.h"
 #include <model.h>
 #include <animator.h>
+#include <chrono>
 
 int SCR_WIDTH = 1280, SCR_HEIGHT = 720;
 glm::mat4 model(1.0f);
@@ -13,6 +14,7 @@ AAssetManager* aAssetManager;
 std::optional<Shader> ourShader;
 std::optional<Model> ourModel;
 std::optional<Animator> animator;
+std::optional<Animation> danceAnimation;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -21,6 +23,9 @@ glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+// time
+std::chrono::steady_clock::time_point timeStart;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -156,14 +161,14 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject thiz) {
 
-    //gl3stubInit();
+    timeStart = std::chrono::steady_clock::now();
 
     ourShader = Shader(env, thiz,
                        "vertex.glsl", "fragment.glsl");
 
     ourModel = Model("vampire/dancing_vampire.dae");
-    Animation danceAnimation("vampire/dancing_vampire.dae", &ourModel);
-    animator = Animator(&danceAnimation);
+    danceAnimation = Animation("vampire/dancing_vampire.dae", &ourModel.value());
+    animator = Animator(&danceAnimation.value());
 
     setupNDC();
     glEnable(GL_DEPTH_TEST);
@@ -173,11 +178,13 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
 
-    jclass systemKlass = env->FindClass("java/lang/System");
+    std::chrono::steady_clock::time_point timeEnd = std::chrono::steady_clock::now();
+    float timeMillis = (std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count()) / 1000000.0;
+    /*jclass systemKlass = env->FindClass("java/lang/System");
     jmethodID currentTimeMillis = env->GetStaticMethodID(systemKlass, "currentTimeMillis", "()J");
-    jlong timeMillis = env->CallStaticLongMethod(systemKlass, currentTimeMillis);
+    jlong timeMillis = env->CallStaticLongMethod(systemKlass, currentTimeMillis);*/
 
-    float currentFrame = (float) timeMillis;
+    float currentFrame = timeMillis;
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
     animator->UpdateAnimation(deltaTime);
@@ -195,6 +202,10 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
     glm::mat4 view = camera.GetViewMatrix();
     ourShader->setMat4("projection", projection);
     ourShader->setMat4("view", view);
+
+    auto transforms = animator->GetFinalBoneMatrices();
+    for (int i = 0; i < transforms.size(); ++i)
+        ourShader->setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 
     // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);

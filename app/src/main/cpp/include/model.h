@@ -32,8 +32,6 @@ public:
     vector<Mesh>    meshes;
     string directory;
     bool gammaCorrection;
-	
-	
 
     // constructor, expects a filepath to a 3D model.
     Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
@@ -66,7 +64,7 @@ private:
         // check for errors
         if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
         {
-            cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+            LOGE("ERROR::ASSIMP:: ", importer.GetErrorString());
             return;
         }
         // retrieve the directory path of the filepath
