@@ -37,9 +37,11 @@ class NativeLibActivity: AppCompatActivity() {
 
         surfacevw = GLView(this)
         setContentView(surfacevw)
-        // Check if the system supports OpenGL ES 3.0.
 
         globalAssets = assets
+        var assetFiles = AssetsUtils.getFolderHierarchy(globalAssets)
+
+        // Check if the system supports OpenGL ES 3.0.
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
         val supportsEs3 = activityManager.deviceConfigurationInfo.reqGlEsVersion >= 0x30000
 

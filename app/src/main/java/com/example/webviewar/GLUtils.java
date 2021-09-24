@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 
 import static android.opengl.GLES30.*;
 
-public class GLUtils  {
+public final class GLUtils  {
 
     private static final String TAG = GLUtils.class.getSimpleName();
     public static AssetManager assets;
