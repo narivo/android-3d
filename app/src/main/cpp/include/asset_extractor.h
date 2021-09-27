@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <string>
 
+#include "logger.h"
+
 extern int errno;
 
 using namespace std;

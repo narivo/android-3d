@@ -9,6 +9,9 @@
 #include <android/bitmap.h>
 #include <native-lib.h>
 
+
+#include "logger.h"
+
 void ThrowJavaException(JNIEnv *env, const char *msg) {
   LOGE("Throw Java exception: %s", msg);
   jclass c = env->FindClass("java/lang/RuntimeException");

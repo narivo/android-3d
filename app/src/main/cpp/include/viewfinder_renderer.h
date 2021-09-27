@@ -122,6 +122,11 @@ public:
         ar_session_ = arSession;
     }
 
+    ViewFinder& operator=(const ViewFinder& other)
+    {
+        // TODO do asignement operator && doc a bit
+    }
+
     ~ViewFinder() {
 
     }
@@ -138,7 +143,7 @@ private:
     };
 
     bool uvs_initialized_ = false;
-    int kNumVertices = 4;
+    static constexpr int kNumVertices = 4;
     float transformed_uvs_[kNumVertices * 2];
 
     // display

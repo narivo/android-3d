@@ -11,6 +11,8 @@
 #include <sstream>
 #include <iostream>
 
+#include "logger.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
