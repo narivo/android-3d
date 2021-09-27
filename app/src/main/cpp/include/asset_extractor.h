@@ -5,16 +5,20 @@
 #ifndef ASSET_EXTRACTOR_H
 #define ASSET_EXTRACTOR_H
 
-#include "native-lib.h"
+#include "jni.h"
 
 #include <android/asset_manager_jni.h>
 
+#include <vector>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <unistd.h>
 #include <string>
 
-struct stat st = {0};
+extern int errno;
+
+using namespace std;
 
 class AssetExtractor{
 public:
@@ -68,6 +72,7 @@ private:
     jobject mgr;
     AAssetManager* aAssetManager;
     vector<string> folders;
+    struct stat st = {0};
 
     void extractFolder(const char* root_dir, const char* name) {
         if(stat(name, &st) == -1) {
@@ -130,4 +135,4 @@ private:
     }
 };
 
-#endif //WEBVIEW_AR_ASSET_EXTRACTOR_H
+#endif //ASSET_EXTRACTOR_H

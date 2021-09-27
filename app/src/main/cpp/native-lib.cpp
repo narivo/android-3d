@@ -68,8 +68,7 @@ Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject th
 
     timeStart = std::chrono::steady_clock::now();
 
-    ourShader = Shader(env, thiz,
-                       "vertex.glsl", "fragment.glsl");
+    ourShader = Shader("vertex.glsl", "fragment.glsl");
 
     ourModel = Model("vampire/dancing_vampire.dae");
     danceAnimation = Animation("vampire/dancing_vampire.dae", &ourModel.value());
@@ -88,7 +87,7 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
     lastFrame = currentFrame;
     animator->UpdateAnimation(deltaTime);
 
-    glClearColor(0.75f, 0.52f, 0.3f, 1.0f);
+    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ourShader->use();

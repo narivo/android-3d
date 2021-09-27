@@ -1,9 +1,15 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "native-lib.h"
+#include "jni.h"
+
+#include <GLES3/gl3.h>
+#include <EGL/egl.h>
 
 #include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -14,8 +20,7 @@ public:
     unsigned int ID;
 
     // constructor reads and builds the shader
-    Shader(JNIEnv* env, jobject thiz,
-           std::string vertexPath, const char* fragmentPath);
+    Shader(std::string vertexPath, const char* fragmentPath);
 
     // use/activate the shader
     void use() {
@@ -37,6 +42,9 @@ public:
     void setVec3(const std::string &name, glm::vec3 value) const {
         glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
     }
+private:
+    unsigned int createCompileShader(unsigned int type, const char* source);
+    void checkCompileErrors(unsigned int shader, const char* type);
 };
 
 #endif

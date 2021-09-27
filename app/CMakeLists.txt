@@ -13,6 +13,13 @@ cmake_minimum_required(VERSION 3.4.1)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fno-rtti -Wall")
 
+# Import the ARCore (Google Play Services for AR) library.
+add_library(arcore SHARED IMPORTED)
+set_target_properties(arcore PROPERTIES IMPORTED_LOCATION
+        ${ARCORE_LIBPATH}/${ANDROID_ABI}/libarcore_sdk_c.so
+        INTERFACE_INCLUDE_DIRECTORIES ${ARCORE_INCLUDE}
+        )
+
 include_directories(src/main/cpp/include)
 
 file(GLOB SOURCES "src/main/cpp/*.cpp")
@@ -44,4 +51,5 @@ target_link_libraries( # Specifies the target library.
         android
         EGL
         log
+        arcore
         m)
