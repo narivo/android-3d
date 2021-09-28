@@ -78,3 +78,10 @@ void Shader::checkCompileErrors(unsigned int shader, const char* type) {
         }
     }
 }
+Shader::Shader() {
+    // stub
+}
+
+Shader::Shader(const Shader &other) {
+    ID = other.ID;
+}

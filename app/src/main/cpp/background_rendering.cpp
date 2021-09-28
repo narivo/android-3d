@@ -27,7 +27,7 @@ int height_ = 1;
 
 constexpr bool kUseSingleImage = false;
 
-std::optional<ViewFinder> viewFinder;
+ViewFinder* viewFinder = NULL;
 
 ArAugmentedImageDatabase* CreateAugmentedImageDatabase() {
     ArAugmentedImageDatabase* ar_augmented_image_database = nullptr;
@@ -56,7 +56,8 @@ ArAugmentedImageDatabase* CreateAugmentedImageDatabase() {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_webviewar_ARActivity_loadAssets(JNIEnv* env, jobject thiz, jobject asset_manager) {
+Java_com_example_webviewar_ARActivity_loadAssets(JNIEnv* env, jobject thiz,
+                                                 jobject asset_manager) {
     asset_manager_ = AAssetManager_fromJava(env, asset_manager);
     AssetExtractor extractor(env, thiz, asset_manager);
     extractor.ExtractToCache();
@@ -65,7 +66,7 @@ Java_com_example_webviewar_ARActivity_loadAssets(JNIEnv* env, jobject thiz, jobj
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_ARActivity_nativeSurfaceCreated(JNIEnv* env, jobject thiz) {
-    viewFinder = ViewFinder(ar_session_, ar_frame_);
+    *viewFinder = ViewFinder(ar_session_, ar_frame_);
     viewFinder->Prepare();
 }
 
@@ -77,7 +78,8 @@ Java_com_example_webviewar_ARActivity_nativeDrawFrame(JNIEnv* env, jobject thiz)
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_webviewar_ARActivity_nativeSurfaceChanged(JNIEnv* env, jobject thiz, jint display_rotation, jint w, jint h) {
+Java_com_example_webviewar_ARActivity_nativeSurfaceChanged(JNIEnv* env, jobject thiz,
+                                                           jint display_rotation, jint w, jint h) {
     viewFinder->Change(display_rotation, w, h);
 }
 

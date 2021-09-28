@@ -13,6 +13,7 @@
 #include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
 
+#include <algorithm>
 #include "arcore_c_api.h"
 
 class ViewFinder{
@@ -20,18 +21,18 @@ public:
     void Prepare() {
         shader_program_ = Shader("screenquad.vert", "screenquad.frag");
 
-        if (!shader_program_) {
+        if (!shader_program_.ID) {
             LOGE("Could not create program.");
         }
 
         glGenTextures(1, &texture_id_);
         glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
         glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        uniform_texture_ = glGetUniformLocation(shader_program_->ID, "sTexture");
-        attribute_vertices_ = glGetAttribLocation(shader_program_->ID, "a_Position");
-        attribute_uvs_ = glGetAttribLocation(shader_program_->ID, "a_TexCoord");
+        uniform_texture_ = glGetUniformLocation(shader_program_.ID, "sTexture");
+        attribute_vertices_ = glGetAttribLocation(shader_program_.ID, "a_Position");
+        attribute_uvs_ = glGetAttribLocation(shader_program_.ID, "a_TexCoord");
     }
 
     void Draw() {
@@ -87,7 +88,7 @@ public:
             return;
         }
 
-        glUseProgram(shader_program_->ID);
+        shader_program_.use();
         glDepthMask(GL_FALSE);
 
         glUniform1i(uniform_texture_, 1);
@@ -117,21 +118,60 @@ public:
         }
     }
 
+    friend void swap(ViewFinder& first, ViewFinder& second) {
+        using std::swap;
+
+        swap(first.shader_program_, second.shader_program_);
+        swap(first.texture_id_, second.texture_id_);
+        swap(first.uniform_texture_, second.uniform_texture_);
+        swap(first.attribute_vertices_, second.attribute_vertices_);
+        swap(first.attribute_uvs_, second.attribute_uvs_);
+
+        swap(first.display_rotation_, second.display_rotation_);
+        swap(first.width_, second.width_);
+        swap(first.height_, second.height_);
+
+        first.ar_session_ = second.ar_session_;
+        first.ar_frame_ = second.ar_frame_;
+    }
+
+    ViewFinder(): shader_program_() {
+        // stub
+    }
+
     ViewFinder(ArSession* arSession, ArFrame* arFrame) {
         ar_frame_ = arFrame;
         ar_session_ = arSession;
     }
 
-    ViewFinder& operator=(const ViewFinder& other)
-    {
-        // TODO do asignement operator && doc a bit
+    ViewFinder(const ViewFinder& other) {
+        shader_program_ = Shader(other.shader_program_);
+        texture_id_ = other.texture_id_;
+        uniform_texture_ = other.uniform_texture_;
+        attribute_uvs_ = other.attribute_uvs_;
+        attribute_vertices_ = other.attribute_vertices_;
+
+        display_rotation_ = other.display_rotation_;
+        width_ = other.width_;
+        height_ = other.height_;
+
+        ar_session_ = other.ar_session_;
+        ar_frame_ = other.ar_frame_;
+    }
+
+    ViewFinder& operator=(ViewFinder other) {
+        // do the swap
+        swap(*this, other);
+
+        return *this;
     }
 
     ~ViewFinder() {
-
+        ArSession_destroy(ar_session_);
+        ArFrame_destroy(ar_frame_);
     }
 private:
-    std::optional<Shader> shader_program_;
+    Shader shader_program_;
     unsigned int texture_id_;
     unsigned int uniform_texture_;
     unsigned int attribute_vertices_;
