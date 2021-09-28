@@ -131,8 +131,8 @@ public:
         swap(first.width_, second.width_);
         swap(first.height_, second.height_);
 
-        first.ar_session_ = second.ar_session_;
-        first.ar_frame_ = second.ar_frame_;
+        swap(first.ar_session_, second.ar_session_);
+        swap(first.ar_frame_, second.ar_frame_);
     }
 
     ViewFinder(): shader_program_() {

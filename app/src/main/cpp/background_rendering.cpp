@@ -27,7 +27,7 @@ int height_ = 1;
 
 constexpr bool kUseSingleImage = false;
 
-ViewFinder* viewFinder = NULL;
+ViewFinder viewFinder;
 
 ArAugmentedImageDatabase* CreateAugmentedImageDatabase() {
     ArAugmentedImageDatabase* ar_augmented_image_database = nullptr;
@@ -66,21 +66,21 @@ Java_com_example_webviewar_ARActivity_loadAssets(JNIEnv* env, jobject thiz,
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_ARActivity_nativeSurfaceCreated(JNIEnv* env, jobject thiz) {
-    *viewFinder = ViewFinder(ar_session_, ar_frame_);
-    viewFinder->Prepare();
+    viewFinder = ViewFinder(ar_session_, ar_frame_);
+    viewFinder.Prepare();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_ARActivity_nativeDrawFrame(JNIEnv* env, jobject thiz) {
-    viewFinder->Draw();
+    viewFinder.Draw();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_ARActivity_nativeSurfaceChanged(JNIEnv* env, jobject thiz,
                                                            jint display_rotation, jint w, jint h) {
-    viewFinder->Change(display_rotation, w, h);
+    viewFinder.Change(display_rotation, w, h);
 }
 
 extern "C"
