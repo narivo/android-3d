@@ -22,6 +22,8 @@
 #include <assimp_glm_helpers.h>
 #include <animdata.h>
 
+#include <algorithm>
+
 using namespace std;
 
 class Model 
@@ -33,14 +35,36 @@ public:
     string directory;
     bool gammaCorrection;
 
+    friend void swap(Model& first, Model& second) {
+    	using std::swap;
+
+		swap(first.directory, second.directory);
+		swap(first.meshes, second.meshes);
+		swap(first.textures_loaded, second.textures_loaded);
+		swap(first.gammaCorrection, second.gammaCorrection);
+
+		swap(first.m_BoneInfoMap, second.m_BoneInfoMap);
+		swap(first.m_BoneCounter, second.m_BoneCounter);
+    }
+
     // constructor, expects a filepath to a 3D model.
+    Model() {
+    	// stub
+    }
+
     Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
     {
         loadModel(path);
     }
 
+    Model& operator=(Model other) {
+    	swap(*this, other);
+
+    	return *this;
+    }
+
     // draws the model, and thus all its meshes
-    void Draw(std::optional<Shader> &shader)
+    void Draw(Shader &shader)
     {
         for(unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader);

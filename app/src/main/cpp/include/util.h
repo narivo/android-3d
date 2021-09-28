@@ -9,6 +9,7 @@
 #include <android/bitmap.h>
 #include <native-lib.h>
 
+#include "arcore_c_api.h"
 
 #include "logger.h"
 
@@ -42,6 +43,23 @@ void CheckGlError(const char *operation) {
     abort();
   }
 }
+
+// Provides a scoped allocated instance of Anchor.
+// Can be treated as an ArAnchor*.
+class ScopedArPose {
+public:
+    explicit ScopedArPose(const ArSession* session) {
+      ArPose_create(session, nullptr, &pose_);
+    }
+    ~ScopedArPose() { ArPose_destroy(pose_); }
+    ArPose* GetArPose() { return pose_; }
+    // Delete copy constructors.
+    ScopedArPose(const ScopedArPose&) = delete;
+    void operator=(const ScopedArPose&) = delete;
+
+private:
+    ArPose* pose_;
+};
 
 /*static jobject CallJavaLoadImage(JNIEnv* env, jstring image_path) {
   jclass jni_class_id

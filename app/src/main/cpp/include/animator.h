@@ -11,6 +11,10 @@
 class Animator
 {
 public:
+	Animator() {
+		//stub
+	}
+
 	Animator(Animation* animation)
 	{
 		m_CurrentTime = 0.0;
