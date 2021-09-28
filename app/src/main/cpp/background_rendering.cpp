@@ -78,6 +78,7 @@ Java_com_example_webviewar_ARActivity_nativeSurfaceCreated(JNIEnv* env, jobject 
     viewFinder.Prepare();
 
     backpackShader = Shader("vertex.glsl", "fragment.glsl");
+    // TODO Debug here
     backpackModel = Model("backpack/backpack.obj");
 }
 
@@ -105,6 +106,19 @@ Java_com_example_webviewar_ARActivity_nativeDrawFrame(JNIEnv* env, jobject thiz)
     // ============================================================ //
     //                     3D augmented Image                       //
     // ============================================================ //
+    ArCamera* ar_camera;
+    ArFrame_acquireCamera(ar_session_, ar_frame_, &ar_camera);
+
+    glm::mat4 view_mat;
+    glm::mat4 projection_mat;
+    ArCamera_getViewMatrix(ar_session_, ar_camera, glm::value_ptr(view_mat));
+    ArCamera_getProjectionMatrix(ar_session_, ar_camera,
+            /*near=*/0.1f, /*far=*/100.f,
+                                 glm::value_ptr(projection_mat));
+
+    ArTrackingState camera_tracking_state;
+    ArCamera_getTrackingState(ar_session_, ar_camera, &camera_tracking_state);
+    ArCamera_release(ar_camera);
     //DrawAugmentedImage(view_mat, projection_mat);
 }
 
