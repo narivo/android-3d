@@ -41,14 +41,7 @@ public:
         // ========================================================================= //
         //                                   Session                                 //
         // ========================================================================= //
-        if (ar_session_ == nullptr) return;
-
         ArSession_setCameraTextureName(ar_session_, texture_id_);
-
-        // Update session to get current frame and render camera background.
-        if (ArSession_update(ar_session_, ar_frame_) != AR_SUCCESS) {
-            LOGE("AugmentedImageApplication::OnDrawFrame ArSession_update error");
-        }
 
         // ========================================================================= //
         //                                   Drawing                                 //
@@ -71,6 +64,7 @@ public:
             // Suppress rendering if the camera did not produce the first frame yet.
             // This is to avoid drawing possible leftover data from previous sessions if
             // the texture is reused.
+            LOGE("supress");
             return;
         }
 

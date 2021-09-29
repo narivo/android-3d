@@ -37,6 +37,8 @@ ViewFinder viewFinder;
 Model backpackModel;
 Shader backpackShader;
 
+bool DrawAugmentedImage(const glm::mat4&, const glm::mat4&);
+
 ArAugmentedImageDatabase* CreateAugmentedImageDatabase() {
     ArAugmentedImageDatabase* ar_augmented_image_database = nullptr;
     // There are two ways to configure a ArAugmentedImageDatabase:
@@ -78,8 +80,7 @@ Java_com_example_webviewar_ARActivity_nativeSurfaceCreated(JNIEnv* env, jobject 
     viewFinder.Prepare();
 
     backpackShader = Shader("vertex.glsl", "fragment.glsl");
-    // TODO Debug here
-    backpackModel = Model("backpack/backpack.obj");
+    backpackModel  = Model("backpack/backpack.obj");
 }
 
 void GetTransformMatrixFromAnchor(const ArSession* ar_session,
@@ -98,6 +99,27 @@ void GetTransformMatrixFromAnchor(const ArSession* ar_session,
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_ARActivity_nativeDrawFrame(JNIEnv* env, jobject thiz) {
+
+    // Render the scene.
+    glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+
+    // Textures are loaded with premultiplied alpha
+    // (https://developer.android.com/reference/android/graphics/BitmapFactory.Options#inPremultiplied),
+    // so we use the premultiplied alpha blend factors.
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (ar_session_ == nullptr) return;
+
+    // Update session to get current frame and render camera background.
+    if (ArSession_update(ar_session_, ar_frame_) != AR_SUCCESS) {
+        LOGE("AugmentedImageApplication::OnDrawFrame ArSession_update error");
+    }
+
     // ============================================================ //
     //                 Camera ViewFinder picture                    //
     // ============================================================ //
@@ -119,7 +141,7 @@ Java_com_example_webviewar_ARActivity_nativeDrawFrame(JNIEnv* env, jobject thiz)
     ArTrackingState camera_tracking_state;
     ArCamera_getTrackingState(ar_session_, ar_camera, &camera_tracking_state);
     ArCamera_release(ar_camera);
-    //DrawAugmentedImage(view_mat, projection_mat);
+    DrawAugmentedImage(view_mat, projection_mat);
 }
 
 bool DrawAugmentedImage(const glm::mat4& view_mat, const glm::mat4& projection_mat) {
@@ -207,8 +229,11 @@ bool DrawAugmentedImage(const glm::mat4& view_mat, const glm::mat4& projection_m
             backpackShader.use();
             backpackShader.setMat4("projection", projection_mat);
             backpackShader.setMat4("view", view_mat);
+            center_matrix = glm::rotate(center_matrix, (float)glm::radians(90.0), glm::vec3(1.0,0.0, 0.0));
+            center_matrix = glm::translate(center_matrix, glm::vec3(0.0,0.0, 3.0));
             backpackShader.setMat4("model", center_matrix);
 
+            LOGE("Drawing");
             backpackModel.Draw(backpackShader);
         }
     }
