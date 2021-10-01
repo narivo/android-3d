@@ -26,6 +26,23 @@ public:
     Shader(const Shader& other);
     Shader(std::string vertexPath, const char* fragmentPath);
 
+    friend void swap(Shader &first, Shader &second) {
+        using std::swap;
+
+        swap(first.ID, second.ID);
+    }
+
+    Shader& operator=(Shader other) {
+        // do the swap
+        swap(*this, other);
+
+        return *this;
+    }
+
+    ~Shader() {
+        glDeleteProgram(ID);
+    }
+
     // use/activate the shader
     void use() {
         glUseProgram(ID);
