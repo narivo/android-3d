@@ -2,6 +2,7 @@ package com.example.webviewar
 
 import android.Manifest
 import android.app.ActivityManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
 import android.graphics.Bitmap
@@ -10,10 +11,13 @@ import android.hardware.display.DisplayManager.DisplayListener
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.GestureDetectorCompat
 import java.io.IOException
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -40,7 +44,7 @@ class ARActivity : AppCompatActivity(), GLSurfaceView.Renderer, DisplayListener{
 
     external fun loadAssets(assetManager: AssetManager)
 
-    lateinit var surfacevw: GLSurfaceView
+    lateinit var surfacevw: ARView
 
     private fun checkPermissions(permissions: Array<String>): Boolean {
         var perm = true
@@ -52,7 +56,7 @@ class ARActivity : AppCompatActivity(), GLSurfaceView.Renderer, DisplayListener{
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        surfacevw = GLSurfaceView(this)
+        surfacevw = ARView(this)
 
         GLUtils.assets = assets
 
@@ -161,4 +165,52 @@ class ARActivity : AppCompatActivity(), GLSurfaceView.Renderer, DisplayListener{
     override fun onDisplayChanged(p0: Int) {
         viewportChanged = true
     }
+}
+
+class ARView(ctx: Context) : GLSurfaceView(ctx), GestureDetector.OnGestureListener {
+
+    companion object {
+        private val TAG = GLView::class.java.simpleName
+        init {
+            System.loadLibrary("gles3jni")
+        }
+    }
+
+    external fun nativeRotation(eventX: Float, eventY: Float)
+
+    var gestureDetector: GestureDetectorCompat = GestureDetectorCompat(ctx, this)
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        return gestureDetector.onTouchEvent(event)
+    }
+
+    override fun onDown(event: MotionEvent): Boolean {
+        Log.d(TAG, "onDown: $event")
+        return true
+    }
+
+    override fun onShowPress(event: MotionEvent?) {
+        Log.d(TAG, "onShowPress: $event")
+    }
+
+    override fun onSingleTapUp(event: MotionEvent?): Boolean {
+        Log.d(TAG, "onSingleTapUp: $event")
+        return false
+    }
+
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+        Log.d(TAG, "onScroll: $e1 $e2")
+        nativeRotation(distanceX, distanceY)
+        return true
+    }
+
+    override fun onLongPress(event: MotionEvent?) {
+        Log.d(TAG, "onLongPress: $event")
+    }
+
+    override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+        Log.d(TAG, "onFling: $e1 $e2")
+        return true
+    }
+
 }

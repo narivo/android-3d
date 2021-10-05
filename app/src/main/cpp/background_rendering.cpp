@@ -166,3 +166,9 @@ Java_com_example_webviewar_ARActivity_nativeActivityResume(JNIEnv *env, jobject 
     const ArStatus status = ArSession_resume(ar_session_);
     CHECKANDTHROW(status == AR_SUCCESS, env, "Failed to resume AR session.");
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_webviewar_ARView_nativeRotation(JNIEnv *env, jobject thiz,
+                                                 jfloat event_x, jfloat event_y) {
+    objectRenderer.addAngle(-event_x);
+}

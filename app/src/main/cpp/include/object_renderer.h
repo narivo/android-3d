@@ -22,6 +22,16 @@ public:
         // stub
     }
 
+    void addAngle(float angle) {
+        angle_deg += angle;
+        while (angle_deg > 360.0f) {
+            angle_deg -= 360.0f;
+        }
+        while (angle_deg < 0.0f) {
+            angle_deg += 360.0f;
+        }
+    }
+
     ObjectRenderer(ArSession *arSession, ArFrame *arFrame,
                    const char* vertex, const char* fragment,
                    const char* path2Object) {
@@ -56,6 +66,8 @@ public:
 
         swap(first.ar_session_, second.ar_session_);
         swap(first.ar_frame_, second.ar_frame_);
+
+        swap(first.center_matrix, second.center_matrix);
     }
 
     ObjectRenderer(const ObjectRenderer &other) {
@@ -81,6 +93,9 @@ private:
     ArSession *ar_session_ = NULL;
     ArFrame *ar_frame_ = NULL;
     std::unordered_map <int32_t, std::pair<ArAugmentedImage *, ArAnchor *>> augmented_image_map;
+
+    float angle_deg = 0;
+    glm::mat4 center_matrix;
 
     void GetTransformMatrixFromAnchor(const ArSession* ar_session,
                                       const ArAnchor* ar_anchor,
@@ -169,15 +184,15 @@ private:
 
             // Draw this image frame.
             if (tracking_state == AR_TRACKING_STATE_TRACKING) {
-                glm::mat4 center_matrix;
                 GetTransformMatrixFromAnchor(ar_session_, ar_anchor, &center_matrix);
 
                 shader_program_.use();
                 shader_program_.setMat4("projection", projection_mat);
                 shader_program_.setMat4("view", view_mat);
 
-                center_matrix = glm::translate(center_matrix, glm::vec3(0.0,-5.0, 0.0));
-                center_matrix = glm::rotate(center_matrix, (float)glm::radians(270.0), glm::vec3(1.0,0.0, 0.0));
+                center_matrix = glm::translate(center_matrix, glm::vec3(0.0, -5.0, 0.0));
+                center_matrix = glm::rotate(center_matrix, (float)glm::radians(270.0), glm::vec3(1.0, 0.0, 0.0));
+                center_matrix = glm::rotate(center_matrix, (float)glm::radians(angle_deg), glm::vec3(0.0, 0.0, 1.0));
 
                 shader_program_.setMat4("model", center_matrix);
 
