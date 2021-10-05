@@ -69,9 +69,10 @@ Java_com_example_webviewar_Renderer_nativeSurfaceCreated(JNIEnv *env, jobject th
     timeStart = std::chrono::steady_clock::now();
 
     ourShader = Shader("vertex.glsl", "fragment.glsl");
+    ourModel = Model("vampire/dancing_vampire.dae");
 
-    ourModel = Model("backpack/backpack.obj");
     danceAnimation = Animation("vampire/dancing_vampire.dae", &ourModel);
+
     animator = Animator(&danceAnimation);
 
     glEnable(GL_DEPTH_TEST);
