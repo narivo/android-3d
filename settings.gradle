@@ -1,2 +1,2 @@
-rootProject.name = "Webview AR"
+rootProject.name = "ARCore Cpp"
 include ':app'
