@@ -20,7 +20,9 @@ struct AssimpNodeData
 class Animation
 {
 public:
-    Animation() = default;
+    Animation() {
+        // stub
+    }
 
     Animation(const std::string& animationPath, Model* model)
     {

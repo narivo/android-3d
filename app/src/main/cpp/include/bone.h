@@ -33,7 +33,9 @@ class Bone
 public:
 	std::string m_Name;
 
-	Bone() = default;
+	Bone() {
+		// stub
+	}
 
 	~Bone()
 	{
