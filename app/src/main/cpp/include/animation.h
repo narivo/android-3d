@@ -36,6 +36,12 @@ public:
         ReadMissingBones(animation, *model);
     }
 
+    Animation& operator=(Animation other) {
+        swap(*this, other);
+
+        return *this;
+    }
+
     ~Animation()
     {
     }
@@ -52,6 +58,16 @@ public:
         else return &(*iter);
     }
 
+    friend void swap(Animation& first, Animation& second) {
+        using std::swap;
+
+        swap(first.m_Duration, second.m_Duration);
+        swap(first.m_TicksPerSecond, second.m_TicksPerSecond);
+        swap(first.m_Bones, second.m_Bones);
+        swap(first.m_RootNode, second.m_RootNode);
+
+        swap(first.m_BoneInfoMap, second.m_BoneInfoMap);
+    }
 
     inline float GetTicksPerSecond() { return m_TicksPerSecond; }
     inline float GetDuration() { return m_Duration;}

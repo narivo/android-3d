@@ -15,6 +15,22 @@ public:
 		//stub
 	}
 
+	Animator& operator=(Animator other) {
+		swap(*this, other);
+
+		return *this;
+	}
+
+	friend void swap(Animator& first, Animator& second) {
+		using std::swap;
+
+		swap(first.m_CurrentAnimation, second.m_CurrentAnimation);
+		swap(first.m_CurrentTime, second.m_CurrentTime);
+		swap(first.m_DeltaTime, second.m_DeltaTime);
+
+		swap(first.m_FinalBoneMatrices, second.m_FinalBoneMatrices);
+	}
+
 	Animator(Animation* animation)
 	{
 		m_CurrentTime = 0.0;

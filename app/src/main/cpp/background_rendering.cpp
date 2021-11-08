@@ -77,7 +77,7 @@ Java_com_example_webviewar_ARActivity_nativeSurfaceCreated(JNIEnv* env, jobject 
 
     objectRenderer = ObjectRenderer(ar_session_, ar_frame_,
                                     "vertex.glsl", "fragment.glsl",
-                                    "backpack/backpack.obj");
+                                    "vampire/dancing_vampire.dae");
 
 }
 

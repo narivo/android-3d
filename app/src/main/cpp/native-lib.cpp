@@ -45,7 +45,7 @@ Java_com_example_webviewar_NativeLibActivity_loadAssets(JNIEnv *env, jobject thi
     AssetExtractor extractor(env, thiz, mgr);
     extractor.ExtractToCache();
 
-    stbi_set_flip_vertically_on_load(false);
+    stbi_set_flip_vertically_on_load(true);
 }
 
 void change(unsigned int width, unsigned int height) {
@@ -86,7 +86,7 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
     float currentFrame = (std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count()) / 1000000.0;
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
-    //animator.UpdateAnimation(deltaTime);
+    animator.UpdateAnimation(deltaTime);
 
     glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -102,10 +102,10 @@ Java_com_example_webviewar_Renderer_nativeDrawFrame(JNIEnv *env, jobject thiz) {
     ourShader.setMat4("projection", projection);
     ourShader.setMat4("view", view);
 
-    /*auto transforms = animator.GetFinalBoneMatrices();
+    auto transforms = animator.GetFinalBoneMatrices();
     for (int i = 0; i < transforms.size(); ++i)
         ourShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-*/
+
     // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene

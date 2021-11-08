@@ -33,6 +33,33 @@ class Bone
 public:
 	std::string m_Name;
 
+	Bone() = default;
+
+	~Bone()
+	{
+	}
+
+	friend void swap(Bone& first, Bone& second) {
+		using std::swap;
+
+		swap(first.m_Positions, second.m_Positions);
+		swap(first.m_Rotations, second.m_Rotations);
+		swap(first.m_Scales, second.m_Scales);
+
+		swap(first.m_NumPositions, second.m_NumPositions);
+		swap(first.m_NumRotations, second.m_NumRotations);
+		swap(first.m_NumScalings, second.m_NumScalings);
+
+		swap(first.m_LocalTransform, second.m_LocalTransform);
+		swap(first.m_ID, second.m_ID);
+	}
+
+	Bone& operator=(Bone other) {
+		swap(*this, other);
+
+		return *this;
+	}
+
 	Bone(const std::string& name, int ID, const aiNodeAnim* channel)
 		:
 		m_Name(name),

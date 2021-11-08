@@ -16,6 +16,8 @@
 #include "logger.h"
 #include <string>
 
+#include <animator.h>
+
 class ObjectRenderer {
 public:
     ObjectRenderer() {
@@ -35,13 +37,25 @@ public:
     ObjectRenderer(ArSession *arSession, ArFrame *arFrame,
                    const char* vertex, const char* fragment,
                    const char* path2Object) {
+        timeStart = std::chrono::steady_clock::now();
+
         ar_frame_ = arFrame;
         ar_session_ = arSession;
         shader_program_ = Shader(std::string(vertex), fragment);
         model_to_render_  = Model(path2Object);
+
+        danceAnimation = Animation(path2Object, &model_to_render_);
+        animator = Animator(&danceAnimation);
+
+        LOGD("HELLO");
     }
 
     void Draw() {
+        std::chrono::steady_clock::time_point timeEnd = std::chrono::steady_clock::now();
+        float currentFrame = (std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count()) / 1000000.0;
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         ArCamera* ar_camera;
         ArFrame_acquireCamera(ar_session_, ar_frame_, &ar_camera);
 
@@ -53,6 +67,7 @@ public:
         ArTrackingState camera_tracking_state;
         ArCamera_getTrackingState(ar_session_, ar_camera, &camera_tracking_state);
         ArCamera_release(ar_camera);
+
         DrawAugmentedImage(view_mat, projection_mat);
     }
 
@@ -68,6 +83,10 @@ public:
         swap(first.ar_frame_, second.ar_frame_);
 
         swap(first.center_matrix, second.center_matrix);
+
+        swap(first.timeStart, second.timeStart);
+        swap(first.animator, second.animator);
+        swap(first.danceAnimation, second.danceAnimation);
     }
 
     ObjectRenderer(const ObjectRenderer &other) {
@@ -93,6 +112,16 @@ private:
     ArSession *ar_session_ = NULL;
     ArFrame *ar_frame_ = NULL;
     std::unordered_map <int32_t, std::pair<ArAugmentedImage *, ArAnchor *>> augmented_image_map;
+
+    Animator animator;
+    Animation danceAnimation;
+
+// time
+    std::chrono::steady_clock::time_point timeStart;
+
+// timing
+    float deltaTime = 0.0f;	// time between current frame and last frame
+    float lastFrame = 0.0f;
 
     float angle_deg = 0;
     glm::mat4 center_matrix;
@@ -186,15 +215,28 @@ private:
             if (tracking_state == AR_TRACKING_STATE_TRACKING) {
                 GetTransformMatrixFromAnchor(ar_session_, ar_anchor, &center_matrix);
 
+                animator.UpdateAnimation(deltaTime);
+
                 shader_program_.use();
                 shader_program_.setMat4("projection", projection_mat);
                 shader_program_.setMat4("view", view_mat);
 
+                auto transforms = animator.GetFinalBoneMatrices();
+                for (int i = 0; i < transforms.size(); ++i) {
+                    shader_program_.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+                }
+
                 center_matrix = glm::translate(center_matrix, glm::vec3(0.0, -5.0, 0.0));
                 center_matrix = glm::rotate(center_matrix, (float)glm::radians(270.0), glm::vec3(1.0, 0.0, 0.0));
                 center_matrix = glm::rotate(center_matrix, (float)glm::radians(angle_deg), glm::vec3(0.0, 0.0, 1.0));
+                center_matrix = glm::scale(center_matrix, glm::vec3(1.0f, 1.0f, 1.0f));
 
                 shader_program_.setMat4("model", center_matrix);
+
+                /*glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+                model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+                shader_program_.setMat4("model", model);*/
 
                 LOGE("Drawing");
                 model_to_render_.Draw(shader_program_);
