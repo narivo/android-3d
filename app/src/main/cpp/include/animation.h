@@ -38,8 +38,20 @@ public:
         ReadMissingBones(animation, *model);
     }
 
+    Animation(const Animation &other) {
+
+        this->m_Duration = other.m_Duration;
+        this->m_TicksPerSecond = other.m_TicksPerSecond;
+        this->m_Bones = other.m_Bones;
+        this->m_RootNode = other.m_RootNode;
+
+        this->m_BoneInfoMap = other.m_BoneInfoMap;
+    }
+
     Animation& operator=(Animation other) {
         swap(*this, other);
+
+        m_Bones = other.m_Bones;
 
         return *this;
     }
@@ -65,7 +77,7 @@ public:
 
         swap(first.m_Duration, second.m_Duration);
         swap(first.m_TicksPerSecond, second.m_TicksPerSecond);
-        swap(first.m_Bones, second.m_Bones);
+        //swap(first.m_Bones, second.m_Bones);
         swap(first.m_RootNode, second.m_RootNode);
 
         swap(first.m_BoneInfoMap, second.m_BoneInfoMap);
@@ -78,6 +90,7 @@ public:
     {
         return m_BoneInfoMap;
     }
+    std::vector<Bone> m_Bones;
 
 private:
     void ReadMissingBones(const aiAnimation* animation, Model& model)
@@ -122,7 +135,6 @@ private:
     }
     float m_Duration;
     int m_TicksPerSecond;
-    std::vector<Bone> m_Bones;
     AssimpNodeData m_RootNode;
     std::map<std::string, BoneInfo> m_BoneInfoMap;
 };

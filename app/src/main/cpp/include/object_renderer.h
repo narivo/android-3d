@@ -85,14 +85,20 @@ public:
         swap(first.center_matrix, second.center_matrix);
 
         swap(first.timeStart, second.timeStart);
-        swap(first.animator, second.animator);
-        swap(first.danceAnimation, second.danceAnimation);
+        // TODO : Fix the problem here
+        // double swap
+        //swap(first.animator, second.animator);
+        // END
+        //swap(first.danceAnimation, second.danceAnimation);
     }
 
     ObjectRenderer(const ObjectRenderer &other) {
-        shader_program_ = Shader(other.shader_program_);
-        ar_session_ = other.ar_session_;
-        ar_frame_ = other.ar_frame_;
+        this->shader_program_ = Shader(other.shader_program_);
+        this->ar_session_ = other.ar_session_;
+        this->ar_frame_ = other.ar_frame_;
+
+        this->animator = other.animator;
+        this->danceAnimation = other.danceAnimation;
     }
 
     ~ObjectRenderer() {
@@ -104,8 +110,13 @@ public:
         // do the swap
         swap(*this, other);
 
+        animator = other.animator;
+        danceAnimation = other.danceAnimation;
+
         return *this;
     }
+    Animator animator;
+    Animation danceAnimation;
 private:
     Shader shader_program_;
     Model model_to_render_;
@@ -113,8 +124,6 @@ private:
     ArFrame *ar_frame_ = NULL;
     std::unordered_map <int32_t, std::pair<ArAugmentedImage *, ArAnchor *>> augmented_image_map;
 
-    Animator animator;
-    Animation danceAnimation;
 
 // time
     std::chrono::steady_clock::time_point timeStart;

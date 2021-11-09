@@ -67,6 +67,7 @@ Java_com_example_webviewar_ARActivity_loadAssets(JNIEnv* env, jobject thiz,
     asset_manager_ = AAssetManager_fromJava(env, asset_manager);
     AssetExtractor extractor(env, thiz, asset_manager);
     extractor.ExtractToCache();
+    stbi_set_flip_vertically_on_load(true);
 }
 
 extern "C"
@@ -79,6 +80,8 @@ Java_com_example_webviewar_ARActivity_nativeSurfaceCreated(JNIEnv* env, jobject 
                                     "vertex.glsl", "fragment.glsl",
                                     "vampire/dancing_vampire.dae");
 
+    objectRenderer.animator.m_CurrentAnimation = &objectRenderer.danceAnimation;
+    LOGD("DEBUG BREAKPOINT");
 }
 
 extern "C"

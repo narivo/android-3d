@@ -18,17 +18,28 @@ public:
 	Animator& operator=(Animator other) {
 		swap(*this, other);
 
+		m_CurrentAnimation = other.m_CurrentAnimation;
+
 		return *this;
 	}
 
 	friend void swap(Animator& first, Animator& second) {
 		using std::swap;
 
-		swap(first.m_CurrentAnimation, second.m_CurrentAnimation);
+		//swap(first.m_CurrentAnimation, second.m_CurrentAnimation);
+
 		swap(first.m_CurrentTime, second.m_CurrentTime);
 		swap(first.m_DeltaTime, second.m_DeltaTime);
 
 		swap(first.m_FinalBoneMatrices, second.m_FinalBoneMatrices);
+	}
+
+	Animator(const Animator &other) {
+		this->m_CurrentAnimation = other.m_CurrentAnimation;
+		this->m_CurrentTime = other.m_CurrentTime;
+		this->m_DeltaTime = other.m_DeltaTime;
+
+		this->m_FinalBoneMatrices = other.m_FinalBoneMatrices;
 	}
 
 	Animator(Animation* animation)
@@ -90,10 +101,10 @@ public:
 	{
 		return m_FinalBoneMatrices;
 	}
+	Animation* m_CurrentAnimation;
 
 private:
 	std::vector<glm::mat4> m_FinalBoneMatrices;
-	Animation* m_CurrentAnimation;
 	float m_CurrentTime;
 	float m_DeltaTime;
 
