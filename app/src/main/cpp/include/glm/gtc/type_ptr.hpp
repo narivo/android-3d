@@ -34,7 +34,7 @@
 #pragma once
 
 // Dependency:
-#include "../gtc/quaternion.hpp"
+#include "quaternion.hpp"
 #include "../vec2.hpp"
 #include "../vec3.hpp"
 #include "../vec4.hpp"

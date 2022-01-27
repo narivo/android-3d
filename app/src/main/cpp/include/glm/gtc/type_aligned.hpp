@@ -21,7 +21,7 @@
 #include "../vec2.hpp"
 #include "../vec3.hpp"
 #include "../vec4.hpp"
-#include "../gtc/vec1.hpp"
+#include "vec1.hpp"
 
 namespace glm
 {

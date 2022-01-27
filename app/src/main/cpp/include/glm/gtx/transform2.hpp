@@ -15,7 +15,7 @@
 
 // Dependency:
 #include "../glm.hpp"
-#include "../gtx/transform.hpp"
+#include "transform.hpp"
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_transform2 extension included")

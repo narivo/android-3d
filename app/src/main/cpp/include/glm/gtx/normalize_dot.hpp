@@ -14,7 +14,7 @@
 #pragma once
 
 // Dependency:
-#include "../gtx/fast_square_root.hpp"
+#include "fast_square_root.hpp"
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_normalize_dot extension included")

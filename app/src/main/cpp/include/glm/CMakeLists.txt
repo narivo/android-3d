@@ -35,7 +35,7 @@ source_group("SIMD Files" FILES ${SIMD_SOURCE})
 source_group("SIMD Files" FILES ${SIMD_INLINE})
 source_group("SIMD Files" FILES ${SIMD_HEADER})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
+include_directories(../..)
 
 if(GLM_STATIC_LIBRARY_ENABLE OR GLM_DYNAMIC_LIBRARY_ENABLE)
 	if(GLM_STATIC_LIBRARY_ENABLE)

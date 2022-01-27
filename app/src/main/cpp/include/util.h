@@ -7,7 +7,7 @@
 
 #include <jni.h>
 #include <android/bitmap.h>
-#include <native-lib.h>
+#include "native-lib.h"
 
 #include "arcore_c_api.h"
 

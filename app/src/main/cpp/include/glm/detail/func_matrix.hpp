@@ -15,9 +15,9 @@
 #pragma once
 
 // Dependencies
-#include "../detail/precision.hpp"
-#include "../detail/setup.hpp"
-#include "../detail/type_mat.hpp"
+#include "precision.hpp"
+#include "setup.hpp"
+#include "type_mat.hpp"
 #include "../vec2.hpp"
 #include "../vec3.hpp"
 #include "../vec4.hpp"

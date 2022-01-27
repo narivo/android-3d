@@ -1,14 +1,15 @@
 #pragma once
 
-#include<glm/glm.hpp>
+#include"glm/glm.hpp"
 
-struct BoneInfo
-{
-	/*id is index in finalBoneMatrices*/
-	int id;
+namespace aevv_graphics {
 
-	/*offset matrix transforms vertex from model space to bone space*/
-	glm::mat4 offset;
+	struct BoneInfo {
+		/*id is index in finalBoneMatrices*/
+		int id;
 
-};
-#pragma once
+		/*offset matrix transforms vertex from model space to bone space*/
+		glm::mat4 offset;
+
+	};
+}

@@ -1,3 +1,5 @@
+
+
 package com.example.webviewar
 
 import android.Manifest
@@ -41,6 +43,7 @@ class ARActivity : AppCompatActivity(), GLSurfaceView.Renderer, DisplayListener{
 
     external fun nativeActivityPause()
     external fun nativeActivityResume()
+    external fun nativeActivityDestroy()
 
     external fun loadAssets(assetManager: AssetManager)
 
@@ -93,6 +96,11 @@ class ARActivity : AppCompatActivity(), GLSurfaceView.Renderer, DisplayListener{
         setContentView(surfacevw)
     }
 
+    override fun onDestroy() {
+        nativeActivityDestroy()
+        super.onDestroy()
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>,
                                             grantResults: IntArray) {
@@ -125,9 +133,9 @@ class ARActivity : AppCompatActivity(), GLSurfaceView.Renderer, DisplayListener{
     }
 
     override fun onPause() {
-        super.onPause()
         surfacevw.onPause()
         nativeActivityPause()
+        super.onPause()
     }
 
     // ===================================================== //

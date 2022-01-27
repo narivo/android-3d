@@ -21,10 +21,12 @@
 // Created by MadiApps on 27/09/2021.
 //
 
-AAssetManager* asset_manager_ = NULL;
+using namespace aevv_renderers;
 
-ArSession* ar_session_ = NULL;
-ArFrame* ar_frame_ = NULL;
+AAssetManager *asset_manager_ = NULL;
+
+ArSession *ar_session_ = NULL;
+ArFrame *ar_frame_ = NULL;
 
 int display_rotation_ = 0;
 int width_ = 1;
@@ -32,11 +34,11 @@ int height_ = 1;
 
 constexpr bool kUseSingleImage = false;
 
-ViewFinder viewFinder;
-ObjectRenderer objectRenderer;
+ViewFinder* view_finder_;
+ObjectRenderer* object_renderer_;
 
-ArAugmentedImageDatabase* CreateAugmentedImageDatabase() {
-    ArAugmentedImageDatabase* ar_augmented_image_database = nullptr;
+ArAugmentedImageDatabase *CreateAugmentedImageDatabase() {
+    ArAugmentedImageDatabase *ar_augmented_image_database = nullptr;
     // There are two ways to configure a ArAugmentedImageDatabase:
     // 1. Add Bitmap to DB directly
     // 2. Load a pre-built AugmentedImageDatabase
@@ -48,9 +50,9 @@ ArAugmentedImageDatabase* CreateAugmentedImageDatabase() {
     } else {
         std::string database_buffer;
         LoadFileFromAssetManager(asset_manager_, "sample_database.imgdb",
-                                       &database_buffer);
+                                 &database_buffer);
 
-        uint8_t* raw_buffer = reinterpret_cast<uint8_t*>(&database_buffer.front());
+        uint8_t *raw_buffer = reinterpret_cast<uint8_t *>(&database_buffer.front());
         const ArStatus status = ArAugmentedImageDatabase_deserialize(
                 ar_session_, raw_buffer, database_buffer.size(),
                 &ar_augmented_image_database);
@@ -62,7 +64,7 @@ ArAugmentedImageDatabase* CreateAugmentedImageDatabase() {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_webviewar_ARActivity_loadAssets(JNIEnv* env, jobject thiz,
+Java_com_example_webviewar_ARActivity_loadAssets(JNIEnv *env, jobject thiz,
                                                  jobject asset_manager) {
     asset_manager_ = AAssetManager_fromJava(env, asset_manager);
     AssetExtractor extractor(env, thiz, asset_manager);
@@ -72,25 +74,24 @@ Java_com_example_webviewar_ARActivity_loadAssets(JNIEnv* env, jobject thiz,
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_webviewar_ARActivity_nativeSurfaceCreated(JNIEnv* env, jobject thiz) {
-    viewFinder = ViewFinder(ar_session_, ar_frame_);
-    viewFinder.Prepare();
+Java_com_example_webviewar_ARActivity_nativeSurfaceCreated(JNIEnv *env, jobject thiz) {
 
-    objectRenderer = ObjectRenderer(ar_session_, ar_frame_,
-                                    "vertex.glsl", "fragment.glsl",
-                                    "vampire/dancing_vampire.dae");
+    view_finder_ = new ViewFinder(ar_session_, ar_frame_);
+    view_finder_->Prepare();
 
-    objectRenderer.animator.m_CurrentAnimation = &objectRenderer.danceAnimation;
-    LOGD("DEBUG BREAKPOINT");
+    object_renderer_ = new ObjectRenderer(ar_session_, ar_frame_,
+                                          "vertex.glsl", "fragment.glsl",
+                                          "ballerina/ballerina_chapeau.dae");
+
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_webviewar_ARActivity_nativeDrawFrame(JNIEnv* env, jobject thiz) {
+Java_com_example_webviewar_ARActivity_nativeDrawFrame(JNIEnv *env, jobject thiz) {
 
-    // ============================================================ //
-    //                       OpenGL options                         //
-    // ============================================================ //
+// ============================================================ //
+//                       OpenGL options                         //
+// ============================================================ //
     glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
@@ -98,37 +99,37 @@ Java_com_example_webviewar_ARActivity_nativeDrawFrame(JNIEnv* env, jobject thiz)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 
-    // Textures are loaded with premultiplied alpha
-    // (https://developer.android.com/reference/android/graphics/BitmapFactory.Options#inPremultiplied),
-    // so we use the premultiplied alpha blend factors.
+// Textures are loaded with premultiplied alpha
+// (https://developer.android.com/reference/android/graphics/BitmapFactory.Options#inPremultiplied),
+// so we use the premultiplied alpha blend factors.
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-    // ============================================================ //
-    //                  ARCore rendering capture                    //
-    // ============================================================ //
+// ============================================================ //
+//                  ARCore rendering capture                    //
+// ============================================================ //
     if (ar_session_ == nullptr) return;
 
-    // Update session to get current frame and render camera background.
+// Update session to get current frame and render camera background.
     if (ArSession_update(ar_session_, ar_frame_) != AR_SUCCESS) {
         LOGE("AugmentedImageApplication::OnDrawFrame ArSession_update error");
     }
 
-    // ============================================================ //
-    //                 Camera ViewFinder picture                    //
-    // ============================================================ //
-    viewFinder.Draw();
+// ============================================================ //
+//                 Camera ViewFinder picture                    //
+// ============================================================ //
+    view_finder_->Draw();
 
-    // ============================================================ //
-    //                     3D augmented Image                       //
-    // ============================================================ //
-    objectRenderer.Draw();
+// ============================================================ //
+//                     3D augmented Image                       //
+// ============================================================ //
+    object_renderer_->Draw();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_webviewar_ARActivity_nativeSurfaceChanged(JNIEnv* env, jobject thiz,
+Java_com_example_webviewar_ARActivity_nativeSurfaceChanged(JNIEnv *env, jobject thiz,
                                                            jint display_rotation, jint w, jint h) {
-    viewFinder.Change(display_rotation, w, h);
+    view_finder_->Change(display_rotation, w, h);
 }
 
 extern "C"
@@ -139,24 +140,32 @@ Java_com_example_webviewar_ARActivity_nativeActivityPause(JNIEnv *env, jobject t
     }
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_webviewar_ARActivity_nativeActivityDestroy(JNIEnv * env, jobject thiz) {
+    delete object_renderer_;
+    delete view_finder_;
+}
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_ARActivity_nativeActivityResume(JNIEnv *env, jobject thiz) {
 
-    // ================================================= //
-    //                  create session                   //
-    // ================================================= //
-    if(ar_session_ == NULL) {
-        CHECKANDTHROW(ArSession_create(env, thiz, &ar_session_) == AR_SUCCESS, env, "Failed to create AR session.");
-        ArConfig* ar_config = NULL;
+// ================================================= //
+//                  create session                   //
+// ================================================= //
+    if (ar_session_ == NULL) {
+        CHECKANDTHROW(ArSession_create(env, thiz, &ar_session_) == AR_SUCCESS, env,
+                      "Failed to create AR session.");
+        ArConfig *ar_config = NULL;
         ArConfig_create(ar_session_, &ar_config);
         CHECK(ar_config);
 
-        ArAugmentedImageDatabase* ar_augmented_image_database = CreateAugmentedImageDatabase();
+        ArAugmentedImageDatabase *ar_augmented_image_database = CreateAugmentedImageDatabase();
         ArConfig_setAugmentedImageDatabase(ar_session_, ar_config, ar_augmented_image_database);
 
         ArConfig_setFocusMode(ar_session_, ar_config, AR_FOCUS_MODE_AUTO);
-        CHECKANDTHROW(ArSession_configure(ar_session_, ar_config) == AR_SUCCESS, env, "Failed to configure AR session");
+        CHECKANDTHROW(ArSession_configure(ar_session_, ar_config) == AR_SUCCESS, env,
+                      "Failed to configure AR session");
 
         ArAugmentedImageDatabase_destroy(ar_augmented_image_database);
         ArConfig_destroy(ar_config);
@@ -169,9 +178,10 @@ Java_com_example_webviewar_ARActivity_nativeActivityResume(JNIEnv *env, jobject 
     const ArStatus status = ArSession_resume(ar_session_);
     CHECKANDTHROW(status == AR_SUCCESS, env, "Failed to resume AR session.");
 }
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_webviewar_ARView_nativeRotation(JNIEnv *env, jobject thiz,
-                                                 jfloat event_x, jfloat event_y) {
-    objectRenderer.addAngle(-event_x);
+                                               jfloat event_x, jfloat event_y) {
+    object_renderer_->addAngle(-event_x);
 }

@@ -21,7 +21,7 @@
 
 // Dependency:
 #include "../glm.hpp"
-#include "../gtx/quaternion.hpp"
+#include "quaternion.hpp"
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 # pragma message("GLM: GLM_GTX_io extension included")

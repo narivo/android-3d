@@ -26,7 +26,7 @@
 #include "../detail/type_mat4x3.hpp"
 #include "../detail/type_mat4x4.hpp"
 #include "../gtc/quaternion.hpp"
-#include "../gtx/dual_quaternion.hpp"
+#include "dual_quaternion.hpp"
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_type_trait extension included")
