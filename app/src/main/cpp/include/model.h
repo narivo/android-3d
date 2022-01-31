@@ -110,14 +110,18 @@ namespace aevv_graphics {
 
             LOGD("meshname %s", mesh->mName.C_Str());
             LOGD("meshvertices %f", mesh->mVertices->Length());
-            //LOGD("meshnormals %f", mesh->mNormals->Length());
+            if (mesh->mNormals != NULL) {
+                LOGD("meshnormals %f", mesh->mNormals->Length());
+            }
 
             for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
                 Vertex vertex;
                 SetVertexBoneDataToDefault(vertex);
 
                 vertex.Position = AssimpGLMHelpers::GetGLMVec(mesh->mVertices[i]);
-                vertex.Normal = AssimpGLMHelpers::GetGLMVec(mesh->mNormals[i]);
+                if (mesh->mNormals != NULL) {
+                    vertex.Normal = AssimpGLMHelpers::GetGLMVec(mesh->mNormals[i]);
+                }
 
                 if (mesh->mTextureCoords[0]) {
                     glm::vec2 vec;

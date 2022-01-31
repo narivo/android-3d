@@ -47,8 +47,6 @@ namespace aevv_renderers {
 
             dance_animation_ = new Animation(path2Object, model_to_render_);
             animator_ = new Animator(dance_animation_);
-
-            LOGD("HELLO");
         }
 
         void Draw() {
@@ -209,12 +207,12 @@ namespace aevv_renderers {
                                                  transforms[i]);
                     }
 
-                    center_matrix_ = glm::translate(center_matrix_, glm::vec3(0.0, -5.0, 0.0));
-                    center_matrix_ = glm::rotate(center_matrix_, (float) glm::radians(270.0),
-                                                 glm::vec3(1.0, 0.0, 0.0));
+                    center_matrix_ = glm::translate(center_matrix_, glm::vec3(0.0f, 0.0f, 0.0625f));
+                    center_matrix_ = glm::rotate(center_matrix_, (float) glm::radians(270.0f),
+                                                 glm::vec3(1.0f, 0.0f, 0.0f));
                     center_matrix_ = glm::rotate(center_matrix_, (float) glm::radians(angle_deg_),
-                                                 glm::vec3(0.0, 0.0, 1.0));
-                    center_matrix_ = glm::scale(center_matrix_, glm::vec3(1.0f, 1.0f, 1.0f));
+                                                 glm::vec3(0.0f, 0.0f, 1.0f));
+                    center_matrix_ = glm::scale(center_matrix_, glm::vec3(0.125f, 0.125f, 0.125f)); // 0.0625
 
                     shader_program_->setMat4("model", center_matrix_);
 
@@ -223,7 +221,7 @@ namespace aevv_renderers {
                     model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
                     shader_program_.setMat4("model", model);*/
 
-                    LOGE("Drawing");
+                    LOGD("Drawing");
                     LOGD("[Renderer] Shader program : %d", shader_program_->ID);
                     model_to_render_->Draw(*shader_program_);
                 }

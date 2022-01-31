@@ -82,7 +82,6 @@ Java_com_example_webviewar_ARActivity_nativeSurfaceCreated(JNIEnv *env, jobject 
     object_renderer_ = new ObjectRenderer(ar_session_, ar_frame_,
                                           "vertex.glsl", "fragment.glsl",
                                           "ballerina/ballerina_chapeau.dae");
-
 }
 
 extern "C"
